@@ -278,82 +278,141 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
   // ========== GRUPO 6: 4) Teste de Estatísticas ==========
 
-test.describe('Estatísticas', () => {
+  test.describe('Estatísticas', () => {
 
-  test.beforeEach(async ({ page }) => {
-    // Cadastrar aluno aprovado (média >= 7)
-    // Aprovado com nota 3 alta — expõe o bug da média
-    // Média correta: (6+6+10)/3 = 7.33 -> Aprovado
-    // Média com bug: (6+6)/2 = 6.00 -> Recuperação <- bug!
-    await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado');
-    await page.getByLabel('Nota 1').fill('6');
-    await page.getByLabel('Nota 2').fill('6');
-    await page.getByLabel('Nota 3').fill('10');
-    await page.getByRole('button', { name: 'Cadastrar' }).click();
+    test.beforeEach(async ({ page }) => {
+      // Cadastrar aluno aprovado (média >= 7)
+      // Aprovado com nota 3 alta — expõe o bug da média
+      // Média correta: (6+6+10)/3 = 7.33 -> Aprovado
+      // Média com bug: (6+6)/2 = 6.00 -> Recuperação <- bug!
+      await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado');
+      await page.getByLabel('Nota 1').fill('6');
+      await page.getByLabel('Nota 2').fill('6');
+      await page.getByLabel('Nota 3').fill('10');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-    // Cadastrar aluno em Recuperação (média >= 5 e < 7) | Média correta: (5+6+5)/3 = 5.33
-    await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao');
-    await page.getByLabel('Nota 1').fill('5');
-    await page.getByLabel('Nota 2').fill('6');
-    await page.getByLabel('Nota 3').fill('5');
-    await page.getByRole('button', { name: 'Cadastrar' }).click();
+      // Cadastrar aluno em Recuperação (média >= 5 e < 7) | Média correta: (5+6+5)/3 = 5.33
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao');
+      await page.getByLabel('Nota 1').fill('5');
+      await page.getByLabel('Nota 2').fill('6');
+      await page.getByLabel('Nota 3').fill('5');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-    // Cadastrar aluno Reprovado (média < 5) | Média correta: (2+3+1)/3 = 2
-    await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado');
-    await page.getByLabel('Nota 1').fill('2');
-    await page.getByLabel('Nota 2').fill('3');
-    await page.getByLabel('Nota 3').fill('1');
-    await page.getByRole('button', { name: 'Cadastrar' }).click();
+      // Cadastrar aluno Reprovado (média < 5) | Média correta: (2+3+1)/3 = 2
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado');
+      await page.getByLabel('Nota 1').fill('2');
+      await page.getByLabel('Nota 2').fill('3');
+      await page.getByLabel('Nota 3').fill('1');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-    // Garantir que os três foram cadastrados
-    await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(3);
-  });
-
-  test('deve exibir o total correto nos cards de estatística', async ({ page }) => {
-    await expect(page.locator('#stat-total')).toHaveText('3');
-  });
-
-  test('deve exibir o total correto de aprovados', async ({ page }) => {
-    // Com o bug, esse card mostra 0 em vez de 1 -> teste falha e expõe o defeito
-    await expect(page.locator('#stat-aprovados')).toHaveText('1');
-  });
-
-  test('deve exibir o total correto de recuperação', async ({ page }) => {
-    // Com o bug também vai falhar, pois vai mostrar 2 em vez de 1.
-    await expect(page.locator('#stat-recuperacao')).toHaveText('1');
-  });
-
-  test('deve exibir o total correto de reprovados', async ({ page }) => {
-    await expect(page.locator('#stat-reprovados')).toHaveText('1');
-  });
-
-  test('deve atualizar os cards corretamente ao excluir um aluno', async ({ page }) => {
-    // Excluindo o aluno REprovado
-    await page.getByRole('button', { name: 'Excluir Aluno Reprovado' }).click();
-
-    // Garantindo que a tabela atualizou
-    await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(2);
-
-    await expect(page.locator('#stat-total')).toHaveText('2');
-    await expect(page.locator('#stat-reprovados')).toHaveText('0');
-
-    await expect(page.locator('#stat-aprovados')).toHaveText('1'); //com o bug vai falhar mostrando 0
-    await expect(page.locator('#stat-recuperacao')).toHaveText('1'); //com o bug vai falhar mostrando 2
-  });
-
-  test('deve zerar todos os cards ao limpar a tabela', async ({ page }) => {
-    page.on('dialog', async dialog => {
-      await dialog.accept();
+      // Garantir que os três foram cadastrados
+      await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(3);
     });
-    await page.getByRole('button', { name: 'Limpar Tudo' }).click();
 
-    await expect(page.locator('#stat-total')).toHaveText('0');
-    await expect(page.locator('#stat-aprovados')).toHaveText('0');
-    await expect(page.locator('#stat-recuperacao')).toHaveText('0');
-    await expect(page.locator('#stat-reprovados')).toHaveText('0');
+    test('deve exibir o total correto nos cards de estatística', async ({ page }) => {
+      await expect(page.locator('#stat-total')).toHaveText('3');
+    });
+
+    test('deve exibir o total correto de aprovados', async ({ page }) => {
+      // Com o bug, esse card mostra 0 em vez de 1 -> teste falha e expõe o defeito
+      await expect(page.locator('#stat-aprovados')).toHaveText('1');
+    });
+
+    test('deve exibir o total correto de recuperação', async ({ page }) => {
+      // Com o bug também vai falhar, pois vai mostrar 2 em vez de 1.
+      await expect(page.locator('#stat-recuperacao')).toHaveText('1');
+    });
+
+    test('deve exibir o total correto de reprovados', async ({ page }) => {
+      await expect(page.locator('#stat-reprovados')).toHaveText('1');
+    });
+
+    test('deve atualizar os cards corretamente ao excluir um aluno', async ({ page }) => {
+      // Excluindo o aluno REprovado
+      await page.getByRole('button', { name: 'Excluir Aluno Reprovado' }).click();
+
+      // Garantindo que a tabela atualizou
+      await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(2);
+
+      await expect(page.locator('#stat-total')).toHaveText('2');
+      await expect(page.locator('#stat-reprovados')).toHaveText('0');
+
+      await expect(page.locator('#stat-aprovados')).toHaveText('1'); //com o bug vai falhar mostrando 0
+      await expect(page.locator('#stat-recuperacao')).toHaveText('1'); //com o bug vai falhar mostrando 2
+    });
+
+    test('deve zerar todos os cards ao limpar a tabela', async ({ page }) => {
+      page.on('dialog', async dialog => {
+        await dialog.accept();
+      });
+      await page.getByRole('button', { name: 'Limpar Tudo' }).click();
+
+      await expect(page.locator('#stat-total')).toHaveText('0');
+      await expect(page.locator('#stat-aprovados')).toHaveText('0');
+      await expect(page.locator('#stat-recuperacao')).toHaveText('0');
+      await expect(page.locator('#stat-reprovados')).toHaveText('0');
+    });
+
   });
 
-});
+  // ========== GRUPO 7: 5) Teste de Situação ==========
+  test.describe('Situação I - Aluno Aprovado', () => {
+
+    // Adicionei um beforeEach para popular os dados antes das validações de card
+    test.beforeEach(async ({ page }) => {
+      // 1. Todas as Notas 7
+      await page.getByLabel('Nome do Aluno').fill('Aluno Nota Sete Aprovado');
+      await page.getByLabel('Nota 1').fill('7');
+      await page.getByLabel('Nota 2').fill('7');
+      await page.getByLabel('Nota 3').fill('7');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      // 2. Todas as Notas 10
+      await page.getByLabel('Nome do Aluno').fill('Aluno Nota Dez Aprovado');
+      await page.getByLabel('Nota 1').fill('10');
+      await page.getByLabel('Nota 2').fill('10');
+      await page.getByLabel('Nota 3').fill('10');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      // 3. Notas 7, 8 e 9
+      await page.getByLabel('Nome do Aluno').fill('Aluno Nota Média Aprovado');
+      await page.getByLabel('Nota 1').fill('7');
+      await page.getByLabel('Nota 2').fill('8');
+      await page.getByLabel('Nota 3').fill('9');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      // 4. Notas 6, 7 e 6
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao');
+      await page.getByLabel('Nota 1').fill('6');
+      await page.getByLabel('Nota 2').fill('7');
+      await page.getByLabel('Nota 3').fill('6');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      // 5. Notas 3, 4 e 3
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado');
+      await page.getByLabel('Nota 1').fill('3');
+      await page.getByLabel('Nota 2').fill('4');
+      await page.getByLabel('Nota 3').fill('3');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+    });
+
+    test('deve validar o total de 5 alunos', async ({ page }) => {
+      await expect(page.locator('#stat-total')).toHaveText('5');
+    });
+
+    test('deve validar 3 alunos aprovados', async ({ page }) => {
+      await expect(page.locator('#stat-aprovados')).toHaveText('3');
+    });
+
+    test('deve validar 1 aluno em recuperação', async ({ page }) => {
+      await expect(page.locator('#stat-recuperacao')).toHaveText('1');
+    });
+
+    test('deve validar 1 aluno reprovado', async ({ page }) => {
+      await expect(page.locator('#stat-reprovados')).toHaveText('1');
+    });
+
+  });
 
 
 });
