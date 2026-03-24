@@ -6,8 +6,7 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
     //Verifica título da página
     await expect(page).toHaveTitle(/QS Acadêmico/);
   });
-
-
+  
   // ========== GRUPO 1: Cadastro de Alunos ==========
 
   test.describe('Cadastro de Alunos', () => {
@@ -632,5 +631,4 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
     });
 
   });
-
-});
+})
