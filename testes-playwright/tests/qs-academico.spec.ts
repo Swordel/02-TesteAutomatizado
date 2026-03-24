@@ -3,13 +3,18 @@ import { test, expect } from '@playwright/test';
 test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('https://swordel.github.io/02-TesteAutomatizado/');
+    //Verifica título da página
+    await expect(page).toHaveTitle(/QS Acadêmico/);
   });
+
 
   // ========== GRUPO 1: Cadastro de Alunos ==========
 
   test.describe('Cadastro de Alunos', () => {
-
     test('deve cadastrar um aluno com dados válidos', async ({ page }) => {
+      //Check visibilidade da seção "Cadastro"
+      await expect(page.locator('#secao-cadastro')).toBeVisible();
+
       await page.getByLabel('Nome do Aluno').fill('João Silva');
       await page.getByLabel('Nota 1').fill('7');
       await page.getByLabel('Nota 2').fill('8');
@@ -328,7 +333,7 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
     });
 
     test('deve atualizar os cards corretamente ao excluir um aluno', async ({ page }) => {
-      // Excluindo o aluno REprovado
+      // Excluindo o aluno Reprovado
       await page.getByRole('button', { name: 'Excluir Aluno Reprovado' }).click();
 
       // Garantindo que a tabela atualizou
@@ -355,7 +360,7 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
   });
 
-  // ========== GRUPO 7: 5) Teste de Situação ==========
+  // ========== GRUPO 7: 5) Teste de Situação - Aluno Aprovado ==========
 
   // Cadastrar aluno aprovado (média >= 7) 
   // O sistema deve mostrar o aluno como aprovado caso esteja na situação 1, 2 ou 3
@@ -404,11 +409,11 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
   });
 
-  // ========== GRUPO 8: 6) Teste de Situação ==========
+  // ========== GRUPO 8: 6) Teste de Situação - Aluno Reprovado ==========
 
   // Cadastrar aluno Reprovado (média < 5) 
-  // O sistema deve mostrar o aluno como aprovado caso esteja na situação 1, 2 ou 3
-  // O badge na coluna "Situação" na tabela de Resultados deve ser "Aprovado"
+  // O sistema deve mostrar o aluno como reprovado caso esteja nas situações abaixo
+  // O badge na coluna "Situação" na tabela de Resultados deve ser "Recuperação"
 
   //Situações:
   // 1. Notas próximas ao limite superior de reprovação:        n1 = 5, n2 = 4, n3 = 5 = 4.66 > Status Reprovado
@@ -491,6 +496,139 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
       const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
       await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+  });
+
+  // ========== GRUPO 9: 7) Teste de Multiplos Cadastros ==========
+  // TODO
+
+  // ========== GRUPO 10: 8) Teste de Situação - Aluno em Recuperação ==========
+
+  // Cadastrar aluno em Recuperação (média >= 5 e média < 7) 
+  // O sistema deve mostrar o aluno como em recuperação caso esteja nas situações abaixo
+  // O badge na coluna "Situação" na tabela de Resultados deve ser "Recuperação"
+
+  //Situações:
+
+  // 1. Notas próximas ao limite superior de recuperação:                     n1 = 7, n2 = 6, n3 = 6 > Status Recuperacao
+  // 2. Notas próximas ao limite inferior de recuperação:                     n1 = 5, n2 = 5, n3 = 5 = 5.00 > Status Recuperacao
+  // 3. Notas entre o limite inferior e superior:                             n1 = 5, n2 = 7, n3 = 7 > Status Recuperacao
+  // 4. Notas com limite inferior e superior:                                 n1 = 5, n2 = 6.99, n3 = 7 > Status Recuperacao
+  // 5. Notas com valores decimais :                                          n1 = 6.75, n2 = 6.50, n3 = 6.45 > Status Recuperacao
+  // 6. Notas com valores decimais próximas ao limite superior (n = 6.95):    n1 = 6.75, n2 = 6.75, n3 = 6.75 > Status Recuperacao
+  // 7. Notas com valores decimais no limite superior (6.99):                 n1 = 6.99, n2 = 6.95, n3 = 6.99 > Status Recuperacao
+  // 8. Notas com valores decimais próximas ao limite inferior (n = 5.05):    n1 = 5.05, n2 = 5.05, n3 = 5.05 > Status Recuperacao
+  // 9. Notas com valores decimais no limite inferior (5.01):                 n1 = 5.01, n2 = 5.01, n3 = 5.01 > Status Recuperacao
+
+  test.describe('Situação II - Aluno em Recuperação (Cenários Diversos)', () => {
+
+    // 1. Notas próximas ao limite superior de recuperação: n1 = 7, n2 = 6, n3 = 6 > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas <= 7', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao Limite Superior');
+      await page.getByLabel('Nota 1').fill('7');
+      await page.getByLabel('Nota 2').fill('6');
+      await page.getByLabel('Nota 3').fill('6.99');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 2. Notas próximas ao limite inferior de recuperação: n1 = 5, n2 = 5, n3 = 5 = 5.00 > Status Recuperacao 
+    test('situação: Aluno "Recuperação" com notas = 5', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao Limite Inferior');
+      await page.getByLabel('Nota 1').fill('5');
+      await page.getByLabel('Nota 2').fill('5');
+      await page.getByLabel('Nota 3').fill('5');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 3. Notas entre o limite inferior e superior: n1 = 5, n2 = 6, n3 = 7 > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas entre o limite inferior e superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao entre o limite inferior e superior');
+      await page.getByLabel('Nota 1').fill('5');
+      await page.getByLabel('Nota 2').fill('6');
+      await page.getByLabel('Nota 3').fill('7');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 4. Notas com limite inferior e superior: n1 = 5, n2 = 6.99, n3 = 7 > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas nos limites superior e inferior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao nos limites superior e inferior');
+      await page.getByLabel('Nota 1').fill('5');
+      await page.getByLabel('Nota 2').fill('6.99');
+      await page.getByLabel('Nota 3').fill('7');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 5. Notas com valores decimais : n1 = 5.75, n2 = 6.50, n3 = 6.75 > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas decimais entre os limites', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao com notas decimais');
+      await page.getByLabel('Nota 1').fill('5.75');
+      await page.getByLabel('Nota 2').fill('6.50');
+      await page.getByLabel('Nota 3').fill('6.75');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 6. Notas com valores decimais próximas ao limite superior (n = 6.95) > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas decimais abaixo mas proximas do limite superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao notas 6.95');
+      await page.getByLabel('Nota 1').fill('6.95');
+      await page.getByLabel('Nota 2').fill('6.95');
+      await page.getByLabel('Nota 3').fill('6.95');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 7. Notas com valores decimais no limite superior (6.99) > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas decimais no limite superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao notas 6.99');
+      await page.getByLabel('Nota 1').fill('6.99');
+      await page.getByLabel('Nota 2').fill('6.99');
+      await page.getByLabel('Nota 3').fill('6.99');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 8. Notas com valores decimais próximas do limite inferior (5.05) > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas decimais próximas do limite inferior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao notas 5.05');
+      await page.getByLabel('Nota 1').fill('5.05');
+      await page.getByLabel('Nota 2').fill('5.05');
+      await page.getByLabel('Nota 3').fill('5.05');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
+    });
+
+    // 9. Notas com valores decimais no limite inferior (5.01) > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas decimais no limite inferior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao notas 5.01');
+      await page.getByLabel('Nota 1').fill('5.01');
+      await page.getByLabel('Nota 2').fill('5.01');
+      await page.getByLabel('Nota 3').fill('5.01');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Recuperação');
     });
 
   });
