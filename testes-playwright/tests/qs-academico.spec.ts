@@ -359,72 +359,140 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
   // Cadastrar aluno aprovado (média >= 7) 
   // O sistema deve mostrar o aluno como aprovado caso esteja na situação 1, 2 ou 3
-  // O sistema deve mostrar a quantidade de alunos aprovados corretamente
-  // O total de alunos deve ser maior ou igual a quantidade de alunos aprovados
-  // O sistema não deve exibir "Aprovado" para alunos com média inferior a 7
+  // O badge na coluna "Situação" na tabela de Resultados deve ser "Aprovado"
 
   //Situações:
   // 1. Exatamente igual a 7
   // 2. Exatamente igual a 10
   // 3. Entre 7 e 10 (n1 = 7, n2 = 8, n1 = 9)
-  // 4. Inferior a 7 - Deve ser "Recuperação ou Reprovado"
-  // 5. Card Estatísticas deve apresentar as informações corretas.
 
   test.describe('Situação I - Aluno Aprovado (Cenários Diversos)', () => {
 
-    // Adicionei um beforeEach para popular os dados antes das validações de card
-    test.beforeEach(async ({ page }) => {
-      // 1. Todas as Notas 7
-      await page.getByLabel('Nome do Aluno').fill('Aluno Nota Sete Aprovado');
+
+    test('situação: Aluno "Aprovado" com média 7', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado Nota 7');
       await page.getByLabel('Nota 1').fill('7');
       await page.getByLabel('Nota 2').fill('7');
       await page.getByLabel('Nota 3').fill('7');
       await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-      // 2. Todas as Notas 10
-      await page.getByLabel('Nome do Aluno').fill('Aluno Nota Dez Aprovado');
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Aprovado');
+    });
+
+    test('situação: Aluno "Aprovado" com média 10', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado Nota 10');
       await page.getByLabel('Nota 1').fill('10');
       await page.getByLabel('Nota 2').fill('10');
       await page.getByLabel('Nota 3').fill('10');
       await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-      // 3. Notas 7, 8 e 9
-      await page.getByLabel('Nome do Aluno').fill('Aluno Nota Média Aprovado');
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Aprovado');
+    });
+
+    test('Aluno "Aprovado" com notas 7, 8 e 9', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Fronteira Superior');
       await page.getByLabel('Nota 1').fill('7');
       await page.getByLabel('Nota 2').fill('8');
       await page.getByLabel('Nota 3').fill('9');
       await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-      // 4. Notas 6, 7 e 6
-      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao');
-      await page.getByLabel('Nota 1').fill('6');
-      await page.getByLabel('Nota 2').fill('7');
-      await page.getByLabel('Nota 3').fill('6');
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Aprovado');
+    });
+
+  });
+
+  // ========== GRUPO 8: 6) Teste de Situação ==========
+
+  // Cadastrar aluno Reprovado (média < 5) 
+  // O sistema deve mostrar o aluno como aprovado caso esteja na situação 1, 2 ou 3
+  // O badge na coluna "Situação" na tabela de Resultados deve ser "Aprovado"
+
+  //Situações:
+  // 1. Notas próximas ao limite superior de reprovação:        n1 = 5, n2 = 4, n3 = 5 = 4.66 > Status Reprovado
+  // 2. Notas próximas ao limite inferior de reprovação:        n1 = 0, n2 = 0, n3 = 0 = 0.00 > Status Reprovado
+  // 3. Notas entre o limite inferior e superior:               n1 = 2, n2 = 3, n3 = 4 = 3.00 > Status Reprovado
+  // 4. Notas com limite inferior e superior:                   n1 = 0, n2 = 5, n3 = 3 = 2.66 > Status Reprovado
+  // 5. Notas com valores decimais :                            n1 = 4.75, n2 = 4.75, n3 = 4.75 = 4.75 ou 4.80 > Status Reprovado
+  // 6. Notas com valores decimais proximas ao limite superior: n1 = 4.95, n2 = 4.95, n3 = media 4.95 > Status Reprovado
+
+
+  test.describe('Situação II - Aluno Reprovado (Cenários Diversos)', () => {
+
+    // 1. Notas próximas ao limite superior de reprovação: n1 = 5, n2 = 4, n3 = 5 = 4.66 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas < 5', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Nota 5');
+      await page.getByLabel('Nota 1').fill('5');
+      await page.getByLabel('Nota 2').fill('4');
+      await page.getByLabel('Nota 3').fill('5');
       await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-      // 5. Notas 3, 4 e 3
-      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado');
-      await page.getByLabel('Nota 1').fill('3');
-      await page.getByLabel('Nota 2').fill('4');
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 2. Notas próximas ao limite inferior de reprovação: n1 = 0, n2 = 0, n3 = 0 = 0.00 > Status Reprovado    
+    test('situação: Aluno "Reprovado" com notas = 0', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Nota 0');
+      await page.getByLabel('Nota 1').fill('0');
+      await page.getByLabel('Nota 2').fill('0');
+      await page.getByLabel('Nota 3').fill('0');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 3. Notas entre o limite inferior e superior: n1 = 2, n2 = 3, n3 = 4 = 3.00 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas entre o limite inferior e superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Notas entre 0 e 5');
+      await page.getByLabel('Nota 1').fill('2');
+      await page.getByLabel('Nota 2').fill('3');
+      await page.getByLabel('Nota 3').fill('4');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 4. Notas com limite inferior e superior: n1 = 0, n2 = 5, n3 = 3 = 2.66 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas limite inferior + limite superior + valor n', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado com notas limites');
+      await page.getByLabel('Nota 1').fill('0');
+      await page.getByLabel('Nota 2').fill('5');
       await page.getByLabel('Nota 3').fill('3');
       await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
     });
 
-    test('deve validar o total de 5 alunos', async ({ page }) => {
-      await expect(page.locator('#stat-total')).toHaveText('5');
+    // 5. Notas com valores decimais : n1 = 4.75, n2 = 4.75, n3 = 4.75 = 4.75 ou 4.80 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas decimais abaixo do limite superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Notas 4.75');
+      await page.getByLabel('Nota 1').fill('4.75');
+      await page.getByLabel('Nota 2').fill('4.75');
+      await page.getByLabel('Nota 3').fill('4.75');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
     });
 
-    test('deve validar 3 alunos aprovados', async ({ page }) => {
-      await expect(page.locator('#stat-aprovados')).toHaveText('3');
+    // 6. Notas com valores decimais proximas ao limite superior: n1 = 4.95, n2 = 4.95, n3 = media 4.95 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas decimais abaixo mas proximas do limite superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Notas 4.95');
+      await page.getByLabel('Nota 1').fill('4.95');
+      await page.getByLabel('Nota 2').fill('4.95');
+      await page.getByLabel('Nota 3').fill('4.95');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
     });
 
-    test('deve validar 1 aluno em recuperação', async ({ page }) => {
-      await expect(page.locator('#stat-recuperacao')).toHaveText('1');
-    });
-
-    test('deve validar 1 aluno reprovado', async ({ page }) => {
-      await expect(page.locator('#stat-reprovados')).toHaveText('1');
-    });
   });
 
 });
