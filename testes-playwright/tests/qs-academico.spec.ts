@@ -278,82 +278,221 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
   // ========== GRUPO 6: 4) Teste de Estatísticas ==========
 
-test.describe('Estatísticas', () => {
+  test.describe('Estatísticas', () => {
 
-  test.beforeEach(async ({ page }) => {
-    // Cadastrar aluno aprovado (média >= 7)
-    // Aprovado com nota 3 alta — expõe o bug da média
-    // Média correta: (6+6+10)/3 = 7.33 -> Aprovado
-    // Média com bug: (6+6)/2 = 6.00 -> Recuperação <- bug!
-    await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado');
-    await page.getByLabel('Nota 1').fill('6');
-    await page.getByLabel('Nota 2').fill('6');
-    await page.getByLabel('Nota 3').fill('10');
-    await page.getByRole('button', { name: 'Cadastrar' }).click();
+    test.beforeEach(async ({ page }) => {
+      // Cadastrar aluno aprovado (média >= 7)
+      // Aprovado com nota 3 alta — expõe o bug da média
+      // Média correta: (6+6+10)/3 = 7.33 -> Aprovado
+      // Média com bug: (6+6)/2 = 6.00 -> Recuperação <- bug!
+      await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado');
+      await page.getByLabel('Nota 1').fill('6');
+      await page.getByLabel('Nota 2').fill('6');
+      await page.getByLabel('Nota 3').fill('10');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-    // Cadastrar aluno em Recuperação (média >= 5 e < 7) | Média correta: (5+6+5)/3 = 5.33
-    await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao');
-    await page.getByLabel('Nota 1').fill('5');
-    await page.getByLabel('Nota 2').fill('6');
-    await page.getByLabel('Nota 3').fill('5');
-    await page.getByRole('button', { name: 'Cadastrar' }).click();
+      // Cadastrar aluno em Recuperação (média >= 5 e < 7) | Média correta: (5+6+5)/3 = 5.33
+      await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao');
+      await page.getByLabel('Nota 1').fill('5');
+      await page.getByLabel('Nota 2').fill('6');
+      await page.getByLabel('Nota 3').fill('5');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-    // Cadastrar aluno Reprovado (média < 5) | Média correta: (2+3+1)/3 = 2
-    await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado');
-    await page.getByLabel('Nota 1').fill('2');
-    await page.getByLabel('Nota 2').fill('3');
-    await page.getByLabel('Nota 3').fill('1');
-    await page.getByRole('button', { name: 'Cadastrar' }).click();
+      // Cadastrar aluno Reprovado (média < 5) | Média correta: (2+3+1)/3 = 2
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado');
+      await page.getByLabel('Nota 1').fill('2');
+      await page.getByLabel('Nota 2').fill('3');
+      await page.getByLabel('Nota 3').fill('1');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
 
-    // Garantir que os três foram cadastrados
-    await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(3);
-  });
-
-  test('deve exibir o total correto nos cards de estatística', async ({ page }) => {
-    await expect(page.locator('#stat-total')).toHaveText('3');
-  });
-
-  test('deve exibir o total correto de aprovados', async ({ page }) => {
-    // Com o bug, esse card mostra 0 em vez de 1 -> teste falha e expõe o defeito
-    await expect(page.locator('#stat-aprovados')).toHaveText('1');
-  });
-
-  test('deve exibir o total correto de recuperação', async ({ page }) => {
-    // Com o bug também vai falhar, pois vai mostrar 2 em vez de 1.
-    await expect(page.locator('#stat-recuperacao')).toHaveText('1');
-  });
-
-  test('deve exibir o total correto de reprovados', async ({ page }) => {
-    await expect(page.locator('#stat-reprovados')).toHaveText('1');
-  });
-
-  test('deve atualizar os cards corretamente ao excluir um aluno', async ({ page }) => {
-    // Excluindo o aluno REprovado
-    await page.getByRole('button', { name: 'Excluir Aluno Reprovado' }).click();
-
-    // Garantindo que a tabela atualizou
-    await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(2);
-
-    await expect(page.locator('#stat-total')).toHaveText('2');
-    await expect(page.locator('#stat-reprovados')).toHaveText('0');
-
-    await expect(page.locator('#stat-aprovados')).toHaveText('1'); //com o bug vai falhar mostrando 0
-    await expect(page.locator('#stat-recuperacao')).toHaveText('1'); //com o bug vai falhar mostrando 2
-  });
-
-  test('deve zerar todos os cards ao limpar a tabela', async ({ page }) => {
-    page.on('dialog', async dialog => {
-      await dialog.accept();
+      // Garantir que os três foram cadastrados
+      await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(3);
     });
-    await page.getByRole('button', { name: 'Limpar Tudo' }).click();
 
-    await expect(page.locator('#stat-total')).toHaveText('0');
-    await expect(page.locator('#stat-aprovados')).toHaveText('0');
-    await expect(page.locator('#stat-recuperacao')).toHaveText('0');
-    await expect(page.locator('#stat-reprovados')).toHaveText('0');
+    test('deve exibir o total correto nos cards de estatística', async ({ page }) => {
+      await expect(page.locator('#stat-total')).toHaveText('3');
+    });
+
+    test('deve exibir o total correto de aprovados', async ({ page }) => {
+      // Com o bug, esse card mostra 0 em vez de 1 -> teste falha e expõe o defeito
+      await expect(page.locator('#stat-aprovados')).toHaveText('1');
+    });
+
+    test('deve exibir o total correto de recuperação', async ({ page }) => {
+      // Com o bug também vai falhar, pois vai mostrar 2 em vez de 1.
+      await expect(page.locator('#stat-recuperacao')).toHaveText('1');
+    });
+
+    test('deve exibir o total correto de reprovados', async ({ page }) => {
+      await expect(page.locator('#stat-reprovados')).toHaveText('1');
+    });
+
+    test('deve atualizar os cards corretamente ao excluir um aluno', async ({ page }) => {
+      // Excluindo o aluno REprovado
+      await page.getByRole('button', { name: 'Excluir Aluno Reprovado' }).click();
+
+      // Garantindo que a tabela atualizou
+      await expect(page.locator('#tabela-alunos tbody tr')).toHaveCount(2);
+
+      await expect(page.locator('#stat-total')).toHaveText('2');
+      await expect(page.locator('#stat-reprovados')).toHaveText('0');
+
+      await expect(page.locator('#stat-aprovados')).toHaveText('1'); //com o bug vai falhar mostrando 0
+      await expect(page.locator('#stat-recuperacao')).toHaveText('1'); //com o bug vai falhar mostrando 2
+    });
+
+    test('deve zerar todos os cards ao limpar a tabela', async ({ page }) => {
+      page.on('dialog', async dialog => {
+        await dialog.accept();
+      });
+      await page.getByRole('button', { name: 'Limpar Tudo' }).click();
+
+      await expect(page.locator('#stat-total')).toHaveText('0');
+      await expect(page.locator('#stat-aprovados')).toHaveText('0');
+      await expect(page.locator('#stat-recuperacao')).toHaveText('0');
+      await expect(page.locator('#stat-reprovados')).toHaveText('0');
+    });
+
   });
 
-});
+  // ========== GRUPO 7: 5) Teste de Situação ==========
 
+  // Cadastrar aluno aprovado (média >= 7) 
+  // O sistema deve mostrar o aluno como aprovado caso esteja na situação 1, 2 ou 3
+  // O badge na coluna "Situação" na tabela de Resultados deve ser "Aprovado"
+
+  //Situações:
+  // 1. Exatamente igual a 7
+  // 2. Exatamente igual a 10
+  // 3. Entre 7 e 10 (n1 = 7, n2 = 8, n1 = 9)
+
+  test.describe('Situação I - Aluno Aprovado (Cenários Diversos)', () => {
+
+
+    test('situação: Aluno "Aprovado" com média 7', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado Nota 7');
+      await page.getByLabel('Nota 1').fill('7');
+      await page.getByLabel('Nota 2').fill('7');
+      await page.getByLabel('Nota 3').fill('7');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Aprovado');
+    });
+
+    test('situação: Aluno "Aprovado" com média 10', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Aprovado Nota 10');
+      await page.getByLabel('Nota 1').fill('10');
+      await page.getByLabel('Nota 2').fill('10');
+      await page.getByLabel('Nota 3').fill('10');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Aprovado');
+    });
+
+    test('Aluno "Aprovado" com notas 7, 8 e 9', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Fronteira Superior');
+      await page.getByLabel('Nota 1').fill('7');
+      await page.getByLabel('Nota 2').fill('8');
+      await page.getByLabel('Nota 3').fill('9');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Aprovado');
+    });
+
+  });
+
+  // ========== GRUPO 8: 6) Teste de Situação ==========
+
+  // Cadastrar aluno Reprovado (média < 5) 
+  // O sistema deve mostrar o aluno como aprovado caso esteja na situação 1, 2 ou 3
+  // O badge na coluna "Situação" na tabela de Resultados deve ser "Aprovado"
+
+  //Situações:
+  // 1. Notas próximas ao limite superior de reprovação:        n1 = 5, n2 = 4, n3 = 5 = 4.66 > Status Reprovado
+  // 2. Notas próximas ao limite inferior de reprovação:        n1 = 0, n2 = 0, n3 = 0 = 0.00 > Status Reprovado
+  // 3. Notas entre o limite inferior e superior:               n1 = 2, n2 = 3, n3 = 4 = 3.00 > Status Reprovado
+  // 4. Notas com limite inferior e superior:                   n1 = 0, n2 = 5, n3 = 3 = 2.66 > Status Reprovado
+  // 5. Notas com valores decimais :                            n1 = 4.75, n2 = 4.75, n3 = 4.75 = 4.75 ou 4.80 > Status Reprovado
+  // 6. Notas com valores decimais proximas ao limite superior: n1 = 4.95, n2 = 4.95, n3 = media 4.95 > Status Reprovado
+
+
+  test.describe('Situação II - Aluno Reprovado (Cenários Diversos)', () => {
+
+    // 1. Notas próximas ao limite superior de reprovação: n1 = 5, n2 = 4, n3 = 5 = 4.66 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas < 5', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Nota 5');
+      await page.getByLabel('Nota 1').fill('5');
+      await page.getByLabel('Nota 2').fill('4');
+      await page.getByLabel('Nota 3').fill('5');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 2. Notas próximas ao limite inferior de reprovação: n1 = 0, n2 = 0, n3 = 0 = 0.00 > Status Reprovado    
+    test('situação: Aluno "Reprovado" com notas = 0', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Nota 0');
+      await page.getByLabel('Nota 1').fill('0');
+      await page.getByLabel('Nota 2').fill('0');
+      await page.getByLabel('Nota 3').fill('0');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 3. Notas entre o limite inferior e superior: n1 = 2, n2 = 3, n3 = 4 = 3.00 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas entre o limite inferior e superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Notas entre 0 e 5');
+      await page.getByLabel('Nota 1').fill('2');
+      await page.getByLabel('Nota 2').fill('3');
+      await page.getByLabel('Nota 3').fill('4');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 4. Notas com limite inferior e superior: n1 = 0, n2 = 5, n3 = 3 = 2.66 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas limite inferior + limite superior + valor n', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado com notas limites');
+      await page.getByLabel('Nota 1').fill('0');
+      await page.getByLabel('Nota 2').fill('5');
+      await page.getByLabel('Nota 3').fill('3');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 5. Notas com valores decimais : n1 = 4.75, n2 = 4.75, n3 = 4.75 = 4.75 ou 4.80 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas decimais abaixo do limite superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Notas 4.75');
+      await page.getByLabel('Nota 1').fill('4.75');
+      await page.getByLabel('Nota 2').fill('4.75');
+      await page.getByLabel('Nota 3').fill('4.75');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+    // 6. Notas com valores decimais proximas ao limite superior: n1 = 4.95, n2 = 4.95, n3 = media 4.95 > Status Reprovado
+    test('situação: Aluno "Reprovado" com notas decimais abaixo mas proximas do limite superior', async ({ page }) => {
+      await page.getByLabel('Nome do Aluno').fill('Aluno Reprovado Notas 4.95');
+      await page.getByLabel('Nota 1').fill('4.95');
+      await page.getByLabel('Nota 2').fill('4.95');
+      await page.getByLabel('Nota 3').fill('4.95');
+      await page.getByRole('button', { name: 'Cadastrar' }).click();
+
+      const linhaAluno = page.locator('#tabela-alunos tbody tr').first();
+      await expect(linhaAluno.locator('.badge')).toHaveText('Reprovado');
+    });
+
+  });
 
 });
