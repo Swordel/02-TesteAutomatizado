@@ -13,11 +13,11 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
   test.describe('Cadastro de Alunos', () => {
 
     test('deve exibir os placeholders corretos nos campos do formulário', async ({ page }) => {
-  await expect(page.getByLabel('Nome do Aluno')).toHaveAttribute('placeholder', 'Digite o nome completo');
-  await expect(page.getByLabel('Nota 1')).toHaveAttribute('placeholder', '0 a 10');
-  await expect(page.getByLabel('Nota 2')).toHaveAttribute('placeholder', '0 a 10');
-  await expect(page.getByLabel('Nota 3')).toHaveAttribute('placeholder', '0 a 10');
-  });
+      await expect(page.getByLabel('Nome do Aluno')).toHaveAttribute('placeholder', 'Digite o nome completo');
+      await expect(page.getByLabel('Nota 1')).toHaveAttribute('placeholder', '0 a 10');
+      await expect(page.getByLabel('Nota 2')).toHaveAttribute('placeholder', '0 a 10');
+      await expect(page.getByLabel('Nota 3')).toHaveAttribute('placeholder', '0 a 10');
+    });
 
     test('deve cadastrar um aluno com dados válidos', async ({ page }) => {
       //Check visibilidade da seção "Cadastro"
@@ -405,7 +405,7 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
     });
 
     test('Aluno "Aprovado" com notas 7, 8 e 9', async ({ page }) => {
-      await page.getByLabel('Nome do Aluno').fill('Aluno Fronteira Superior');
+      await page.getByLabel('Nome do Aluno').fill('Aluno Aprov Variado');
       await page.getByLabel('Nota 1').fill('7');
       await page.getByLabel('Nota 2').fill('8');
       await page.getByLabel('Nota 3').fill('9');
@@ -421,7 +421,7 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
   // Cadastrar aluno Reprovado (média < 5) 
   // O sistema deve mostrar o aluno como reprovado caso esteja nas situações abaixo
-  // O badge na coluna "Situação" na tabela de Resultados deve ser "Recuperação"
+  // O badge na coluna "Situação" na tabela de Resultados deve ser "Reprovado"
 
   //Situações:
   // 1. Notas próximas ao limite superior de reprovação:        n1 = 5, n2 = 4, n3 = 5 = 4.66 > Status Reprovado
@@ -549,20 +549,20 @@ test.describe('QS Acadêmico — Testes do Sistema de Notas', () => {
 
   //Situações:
 
-  // 1. Notas próximas ao limite superior de recuperação:                     n1 = 7, n2 = 6, n3 = 6 > Status Recuperacao
+  // 1. Notas próximas ao limite superior de recuperação:                     n1 = 7, n2 = 6, n3 = 6.99 > Status Recuperacao
   // 2. Notas próximas ao limite inferior de recuperação:                     n1 = 5, n2 = 5, n3 = 5 = 5.00 > Status Recuperacao
   // 3. Notas entre o limite inferior e superior:                             n1 = 5, n2 = 6, n3 = 7 > Status Recuperacao
   // 4. Notas com limite inferior e superior:                                 n1 = 5, n2 = 6.99, n3 = 7 > Status Recuperacao
   // 5. Notas com valores decimais :                                          n1 = 5.75, n2 = 6.50, n3 = 6.75 > Status Recuperacao
-  // 6. Notas com valores decimais próximas ao limite superior (n = 6.95):    n1 = 6.75, n2 = 6.75, n3 = 6.75 > Status Recuperacao
+  // 6. Notas com valores decimais próximas ao limite superior (n = 6.75):    n1 = 6.75, n2 = 6.75, n3 = 6.75 > Status Recuperacao
   // 7. Notas com valores decimais no limite superior (6.99):                 n1 = 6.99, n2 = 6.99, n3 = 6.99 > Status Recuperacao
   // 8. Notas com valores decimais próximas ao limite inferior (n = 5.05):    n1 = 5.05, n2 = 5.05, n3 = 5.05 > Status Recuperacao
   // 9. Notas com valores decimais no limite inferior (5.01):                 n1 = 5.01, n2 = 5.01, n3 = 5.01 > Status Recuperacao
 
-  test.describe('Situação II - Aluno em Recuperação (Cenários Diversos)', () => {
+  test.describe('Situação III - Aluno em Recuperação (Cenários Diversos)', () => {
 
-    // 1. Notas próximas ao limite superior de recuperação: n1 = 7, n2 = 6, n3 = 6 > Status Recuperacao
-    test('situação: Aluno "Recuperação" com notas <= 7', async ({ page }) => {
+    // 1. Notas próximas ao limite superior de recuperação: n1 = 7, n2 = 6, n3 = 6.99 > Status Recuperacao
+    test('situação: Aluno "Recuperação" com notas < 7', async ({ page }) => {
       await page.getByLabel('Nome do Aluno').fill('Aluno Recuperacao Limite Superior');
       await page.getByLabel('Nota 1').fill('7');
       await page.getByLabel('Nota 2').fill('6');
